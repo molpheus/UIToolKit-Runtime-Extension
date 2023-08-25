@@ -1,0 +1,13 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:MultiColumnListView fixed-item-height="20" name="SelectContent" style="flex-grow: 1;">
+        <ui:Columns>
+            <ui:Column name="check" title="✔" width="50" />
+            <ui:Column name="path" title="取得ルート" width="500" />
+            <ui:Column name="type" title="タイプ" width="100" />
+            <ui:Column name="struct" title="構造体" width="150" />
+            <ui:Column name="variable_type" title="変数" width="100" />
+            <ui:Column name="variable" title="変数名" width="150" />
+            <ui:Column name="add" title="add" width="35" />
+        </ui:Columns>
+    </ui:MultiColumnListView>
+</ui:UXML>
