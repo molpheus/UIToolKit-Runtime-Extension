@@ -1,2 +1,2 @@
 # UIToolKit-Extension
-UnityのUIシステム、UI ToolkitをRuntimeで使用するための拡張
+UnityのUIシステム、UI ToolkitをRuntime UIで利用するためにやりやすい拡張を目指す
