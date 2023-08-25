@@ -120,6 +120,7 @@ namespace Asterism.UI.UIElements
                 if (obj is CheckItemListContent c)
                 {
                     content = c;
+                    content.element = e.Value;
                     saveList.Remove(c);
                 }
                 else

@@ -7,10 +7,10 @@ namespace Test.UI
 {
 public partial class TestTemplate : UIBehaviour
 {
-    private UIElement testButton1 = new() {
+    public UIElementButton testButton1 = new() {
         TagNameList = new[] { "TestButton1" }
     };
-    private UIElement testButton2 = new() {
+    public UIElementButton testButton2 = new() {
         TagNameList = new[] { "TextButton2" }
     };
 
