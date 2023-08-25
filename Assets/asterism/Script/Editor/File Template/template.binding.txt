@@ -1,0 +1,11 @@
+// Auto-generated file
+using Asterism.UI;
+using Asterism.UI.UIElements;
+using UnityEngine.UIElements;
+
+#ROOTNAMESPACEBEGIN#
+public partial class #CLASSNAME# : UIBehaviour
+{
+#CONTENT#
+}
+#ROOTNAMESPACEEND#

@@ -1,0 +1,10 @@
+// Auto-generated file
+using Asterism.UI;
+using Asterism.UI.UIElements;
+
+#ROOTNAMESPACEBEGIN#
+public partial class #CLASSNAME# : UIBehaviour
+{
+
+}
+#ROOTNAMESPACEEND#

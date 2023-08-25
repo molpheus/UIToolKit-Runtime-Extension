@@ -1,0 +1,37 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:Template name="editor_layout" src="project://database/Assets/asterism/UXML/editor_layout.uxml?fileID=9197481963319205126&amp;guid=6312571f3f3ecd645bcd111ac78e0127&amp;type=3#editor_layout" />
+    <ui:VisualElement name="Base" style="flex-grow: 1;">
+        <ui:VisualElement name="Title" style="flex-grow: 0; height: auto;">
+            <ui:Label tabindex="-1" text="選択したUXMLに対応するスクリプトを吐き出す機能" parse-escape-sequences="true" display-tooltip-when-elided="true" name="Title_Label" style="-unity-text-outline-width: 1px; -unity-text-outline-color: rgba(255, 255, 255, 0); font-size: 20px; -unity-font-style: normal;" />
+        </ui:VisualElement>
+        <ui:VisualElement name="Content" style="flex-grow: 1; padding-top: 10px; padding-right: 10px; padding-bottom: 10px; padding-left: 10px;">
+            <ui:VisualElement style="flex-grow: 0;">
+                <ui:TextField picking-mode="Ignore" label="選択しているUXML" focusable="false" readonly="true" name="SelectItemField" />
+            </ui:VisualElement>
+            <ui:VisualElement style="flex-grow: 0; flex-direction: row;">
+                <ui:TextField picking-mode="Ignore" label="吐き出し先" name="OutputFilePathField" style="flex-shrink: 1; flex-grow: 1;" />
+                <ui:Button text="Open" parse-escape-sequences="true" display-tooltip-when-elided="true" name="OutputFilePathButton" style="flex-shrink: 1;" />
+            </ui:VisualElement>
+            <ui:VisualElement style="flex-grow: 0;">
+                <ui:TextField picking-mode="Ignore" label="選択しているアイテム" focusable="true" readonly="false" name="OutputFileNameField" />
+                <ui:VisualElement style="flex-grow: 1; flex-direction: row;">
+                    <ui:Label tabindex="-1" text="ExportFileName :" parse-escape-sequences="true" display-tooltip-when-elided="true" />
+                    <ui:Label tabindex="-1" text="Label" parse-escape-sequences="true" display-tooltip-when-elided="true" name="CheckOutputFileNameLabel" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement style="flex-grow: 0; height: 30px;">
+                <ui:Button text="Check" parse-escape-sequences="true" display-tooltip-when-elided="true" name="CheckButton" />
+            </ui:VisualElement>
+            <ui:VisualElement name="SelectWindow" style="flex-grow: 1; display: flex; visibility: hidden; overflow: visible;">
+                <ui:Instance template="editor_layout" name="editor_layout" style="flex-grow: 1;" />
+                <ui:VisualElement style="flex-grow: 0; flex-direction: row;">
+                    <ui:TextField picking-mode="Ignore" label="namespace" name="NameSpace" style="flex-shrink: 1; flex-grow: 1;" />
+                </ui:VisualElement>
+                <ui:VisualElement style="flex-grow: 0; flex-direction: row; flex-shrink: 0; width: auto; height: 30px;">
+                    <ui:Button text="Export" parse-escape-sequences="true" display-tooltip-when-elided="true" name="ExportButton" style="flex-grow: 1; flex-shrink: 1;" />
+                    <ui:Button text="Attach" parse-escape-sequences="true" display-tooltip-when-elided="true" name="AttachButton" style="flex-shrink: 1; flex-grow: 1;" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
