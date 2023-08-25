@@ -22,7 +22,7 @@ namespace Asterism.UI.UIElements
             if (tagNameList is not null)
                 _tagNameList = tagNameList;
 
-            Element = visualElement.SearchElement(tagNameList);
+            Element = visualElement.SearchElement(_tagNameList);
 
             Assert.IsNotNull(Element);
         }

@@ -6,14 +6,14 @@
         </ui:VisualElement>
         <ui:VisualElement name="Content" style="flex-grow: 1; padding-top: 10px; padding-right: 10px; padding-bottom: 10px; padding-left: 10px;">
             <ui:VisualElement style="flex-grow: 0;">
-                <ui:TextField picking-mode="Ignore" label="選択しているアイテム" value="filler text" focusable="false" readonly="true" name="SelectItemField" />
+                <ui:TextField picking-mode="Ignore" label="選択しているUXML" focusable="false" readonly="true" name="SelectItemField" />
             </ui:VisualElement>
             <ui:VisualElement style="flex-grow: 0; flex-direction: row;">
-                <ui:TextField picking-mode="Ignore" label="吐き出し先" value="filler text" name="OutputFilePathField" style="flex-shrink: 1; flex-grow: 1;" />
+                <ui:TextField picking-mode="Ignore" label="吐き出し先" name="OutputFilePathField" style="flex-shrink: 1; flex-grow: 1;" />
                 <ui:Button text="Open" parse-escape-sequences="true" display-tooltip-when-elided="true" name="OutputFilePathButton" style="flex-shrink: 1;" />
             </ui:VisualElement>
             <ui:VisualElement style="flex-grow: 0;">
-                <ui:TextField picking-mode="Ignore" label="選択しているアイテム" value="filler text" focusable="true" readonly="false" name="OutputFileNameField" />
+                <ui:TextField picking-mode="Ignore" label="選択しているアイテム" focusable="true" readonly="false" name="OutputFileNameField" />
                 <ui:VisualElement style="flex-grow: 1; flex-direction: row;">
                     <ui:Label tabindex="-1" text="ExportFileName :" parse-escape-sequences="true" display-tooltip-when-elided="true" />
                     <ui:Label tabindex="-1" text="Label" parse-escape-sequences="true" display-tooltip-when-elided="true" name="CheckOutputFileNameLabel" />
@@ -24,6 +24,9 @@
             </ui:VisualElement>
             <ui:VisualElement name="SelectWindow" style="flex-grow: 1; display: flex; visibility: hidden; overflow: visible;">
                 <ui:Instance template="editor_layout" name="editor_layout" style="flex-grow: 1;" />
+                <ui:VisualElement style="flex-grow: 0; flex-direction: row;">
+                    <ui:TextField picking-mode="Ignore" label="namespace" name="NameSpace" style="flex-shrink: 1; flex-grow: 1;" />
+                </ui:VisualElement>
                 <ui:VisualElement style="flex-grow: 0; flex-direction: row; flex-shrink: 0; width: auto; height: 30px;">
                     <ui:Button text="Export" parse-escape-sequences="true" display-tooltip-when-elided="true" name="ExportButton" style="flex-grow: 1; flex-shrink: 1;" />
                     <ui:Button text="Attach" parse-escape-sequences="true" display-tooltip-when-elided="true" name="AttachButton" style="flex-shrink: 1; flex-grow: 1;" />

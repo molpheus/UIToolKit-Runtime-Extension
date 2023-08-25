@@ -5,29 +5,16 @@ using UnityEngine.UIElements;
 using System.IO;
 using System;
 using System.Text;
-using Codice.CM.SEIDInfo;
-using Cysharp.Threading.Tasks;
-using Cysharp.Threading.Tasks.Linq;
-using System.Collections;
-using static UnityEditor.AddressableAssets.Build.Layout.BuildLayout;
-using Codice.CM.Client.Differences;
-using Unity.VisualScripting;
 using System.Linq;
-using static Codice.CM.Common.Serialization.PacketFileReader;
-using UnityEditor.PackageManager;
-using PlasticPipe.PlasticProtocol.Messages;
 using System.Text.RegularExpressions;
 
 namespace Asterism.UI.UIElements
 {
-    public class UIElementCreaterEditor : EditorWindow
+    public partial class UIElementCreaterEditor : EditorWindow
     {
-        private const string EDITOR_UIELEMENT_GUID = "257e15a813d4cb845aeb7ede61febf93";
-
-        private const string EXPORT_FILE_FORMAT = "{0}.binding.cs";
-        private const string EXPORT_TEMPLATE_FILE_GUID = "6adebb0758a4b2341a6088627a0aad2f";
+        private readonly string _editor_ui_guid = "257e15a813d4cb845aeb7ede61febf93";
         
-        private const string EXPORT_SAVE_FILE = "{0}.save.txt";
+        private const string _export_save_file = "{0}.save.txt";
 
 
         /// <summary>
@@ -125,6 +112,8 @@ namespace Asterism.UI.UIElements
             public string ExportDirectory;
             public string ExportFileName;
 
+            public string NameSpaceName;
+
             public List<CheckItemListContent> checkList;
 
             public void UpdateSelectItemPath(string value)
@@ -135,6 +124,9 @@ namespace Asterism.UI.UIElements
 
             public void UpdateExportFileName(string value)
                 => ExportFileName = value;
+
+            public void UpdateNameSpaceName(string value)
+                => NameSpaceName = value;
         }
 
         /// <summary> セーブ用データ </summary>
@@ -149,11 +141,13 @@ namespace Asterism.UI.UIElements
         TextField _outputFileNameField;
         Label _outputExportFileName;
 
+        TextField _nameSpaceFIeld;
+
         Dictionary<string[], VisualElement> _elementList;
 
         private void OnEnable()
         {
-            var filePath = AssetDatabase.GUIDToAssetPath(EDITOR_UIELEMENT_GUID);
+            var filePath = AssetDatabase.GUIDToAssetPath(_editor_ui_guid);
             _visualTree = AssetDatabase.LoadAssetAtPath(filePath, typeof(VisualTreeAsset)) as VisualTreeAsset;
             _visualTree.CloneTree(rootVisualElement);
 
@@ -161,6 +155,7 @@ namespace Asterism.UI.UIElements
             _outputItemField = rootVisualElement.Q<TextField>("OutputFilePathField");
             _outputFileNameField = rootVisualElement.Q<TextField>("OutputFileNameField");
             _selectWindow = rootVisualElement.Q("SelectWindow");
+            _nameSpaceFIeld = rootVisualElement.Q<TextField>("NameSpace");
             
             // 確認ボタンが押されたときの処理
             rootVisualElement.Q<Button>("CheckButton").clicked += CreateElement;
@@ -171,12 +166,12 @@ namespace Asterism.UI.UIElements
                 _saveData.ExportDirectory = path;
             };
             // 吐き出しボタンが押されたときの処理
-            rootVisualElement.Q<Button>("ExportButton").clicked += Export;
+            rootVisualElement.Q<Button>("ExportButton").clicked += CreateBindingFile;
             // スクリプトのアタッチボタンが押されたときの処理
             rootVisualElement.Q<Button>("AttachButton").clicked += AttachScript;
 
-            //try
-            //{
+            try
+            {
                 var selectObject = Selection.objects[0];
                 if (selectObject is TextAsset textFile)
                 {
@@ -203,18 +198,19 @@ namespace Asterism.UI.UIElements
                 _outputItemField.RegisterValueChangedCallback(_ => { _saveData.ExportDirectory = _.newValue; });
                 _outputFileNameField.RegisterValueChangedCallback(_ => {
                     _saveData.ExportFileName = _.newValue;
-                    _outputExportFileName.text = string.Format(EXPORT_FILE_FORMAT, _.newValue);
+                    _outputExportFileName.text = string.Format(_export_binding_file_format, _.newValue);
                 });
+                _nameSpaceFIeld.RegisterValueChangedCallback(value => { _saveData.NameSpaceName = value.newValue; });
 
                 // 出力する予定のファイル名を表示するラベル
                 _outputExportFileName = rootVisualElement.Q<Label>("CheckOutputFileNameLabel");
-                _outputExportFileName.text = string.Format(EXPORT_FILE_FORMAT, _outputFileNameField.value);
-            //}
-            //catch(Exception e)
-            //{
+                _outputExportFileName.text = string.Format(_export_binding_file_format, _outputFileNameField.value);
+            }
+            catch(Exception e)
+            {
 
-            //    EditorUtility.DisplayDialog(e.Message, "オブジェクト(uxml, saveファイル)が選択されていないため終了します", "OK");
-            //}
+                EditorUtility.DisplayDialog(e.Message, "オブジェクト(uxml, saveファイル)が選択されていないため終了します", "OK");
+            }
         }
 
         /// <summary>
@@ -324,255 +320,6 @@ namespace Asterism.UI.UIElements
             };
         }
 
-        [Obsolete]
-        private void ViewCheckItems()
-        {
-            _selectWindow.visible = _elementList.Count > 0;
-
-            if (_selectWindow.visible)
-            {
-                var selectContent = rootVisualElement.Q<MultiColumnListView>("SelectContent");
-
-                selectContent.Clear();
-
-                var saveList = new List<CheckItemListContent>(_saveData.checkList);
-
-                _saveData.checkList.Clear();
-                foreach (var e in _elementList)
-                {
-                    var label = "";
-                    foreach (var e2 in e.Key)
-                    {
-                        if (string.IsNullOrEmpty(e2)) continue;
-                        if (!string.IsNullOrEmpty(label))
-                            label += " < ";
-                        label += e2;
-                    }
-
-                    CheckItemListContent content = null;
-
-                    var obj = saveList.FirstOrDefault(e => label == e.path);
-
-                    if (obj is CheckItemListContent c)
-                    {
-                        content = c;
-                        content.variable = e.Value.name;
-
-                        saveList.Remove(c);
-                    }
-                    else
-                    {
-                        content = new CheckItemListContent(label, e.Value, e.Key);
-                        content.variable = e.Value.name;
-                    }
-
-                    _saveData.checkList.Add( content );
-                }
-
-                foreach(var e in saveList)
-                {
-                    e.add = false;
-                    e.isDisable = true;
-                    _saveData.checkList.Add(e);
-                }
-
-                selectContent.itemsSource = _saveData.checkList;
-                var checkboxColumn = selectContent.columns["check"];
-                var pathColumn = selectContent.columns["path"];
-                var typeColumn = selectContent.columns["type"];
-                var structColumn = selectContent.columns["struct"];
-                var variableTypeColumn = selectContent.columns["variable_type"];
-                var variableColumn = selectContent.columns["variable"];
-                var addColumn = selectContent.columns["add"];
-
-                // レイアウトを作成する処理
-                checkboxColumn.makeCell = () => new Toggle();
-                pathColumn.makeCell = () => new Label();
-                typeColumn.makeCell = () => new Label();
-                structColumn.makeCell = () => new TextField();
-                variableTypeColumn.makeCell = () => new EnumField(VariableType.PUBLIC);
-                variableColumn.makeCell = () => new TextField();
-                addColumn.makeCell = () => new Toggle();
-
-                // 内容を設定する処理
-                checkboxColumn.bindCell = (e, i) => (e as Toggle).value = _saveData.checkList[i].check;
-                pathColumn.bindCell = (e, i) => (e as Label).text = _saveData.checkList[i].path;
-                typeColumn.bindCell = (e, i) => (e as Label).text = _saveData.checkList[i].type;
-
-                structColumn.bindCell = (e, i) => {
-                    if (e is TextField field)
-                    {
-                        field.value = _saveData.checkList[i].structName;
-                        field.RegisterValueChangedCallback(_saveData.checkList[i].UpdateStructName);
-                    }
-                };
-                structColumn.unbindCell = (e, i) => {
-                    if (e is TextField field)
-                    {
-                        field.UnregisterValueChangedCallback(_saveData.checkList[i].UpdateStructName);
-                    }
-                };
-
-                variableTypeColumn.bindCell = (e, i) => {
-                    (e as EnumField).value = _saveData.checkList[i].variableType;
-                    (e as EnumField).RegisterValueChangedCallback(_saveData.checkList[i].UpdateVariavleType);
-                };
-                variableTypeColumn.unbindCell = (e, i) => {
-                    (e as EnumField).UnregisterValueChangedCallback(_saveData.checkList[i].UpdateVariavleType);
-                };
-
-                variableColumn.bindCell = (e, i) => {
-                    (e as TextField).value = _saveData.checkList[i].variable;
-                    (e as TextField).RegisterValueChangedCallback(_saveData.checkList[i].UpdateText);
-                };
-                variableColumn.unbindCell = (e, i) => {
-                    (e as TextField).UnregisterValueChangedCallback(_saveData.checkList[i].UpdateText);
-                };
-
-                addColumn.bindCell = (e, i) => {
-                    if (e is Toggle toggle)
-                    {
-                        toggle.value = _saveData.checkList[i].add;
-                        toggle.RegisterValueChangedCallback(_saveData.checkList[i].UpdateAddCheck);
-                    }
-                };
-                addColumn.unbindCell = (e, i) => {
-                    if (e is Toggle toggle)
-                    {
-                        toggle.UnregisterValueChangedCallback(_saveData.checkList[i].UpdateAddCheck);
-                    }
-                };
-
-                checkboxColumn.visible = false;
-            }
-        }
-
-        private void Export()
-        {
-            var tabSpace = "    ";
-
-            var filePath = AssetDatabase.GUIDToAssetPath(EXPORT_TEMPLATE_FILE_GUID);
-            var fileData = System.IO.File.ReadAllText(filePath);
-
-            // クラス名
-            fileData = fileData.Replace("{CLASSNAME}", _outputFileNameField.value);
-
-            
-            // 構造体別にデータを保存
-            Dictionary<string, List<CheckItemListContent>> contentList = new();
-            foreach(var item in _saveData.checkList)
-            {
-                if (contentList.ContainsKey(item.structName))
-                {
-                    contentList[item.structName].Add(item);
-                }
-                else
-                {
-                    var list = new List<CheckItemListContent>() {
-                        item
-                    };
-                    contentList.Add(item.structName, list);
-                }
-            }
-
-            // 同名のクラス名・変数名があれば終了する
-            
-
-
-            // 宣言の追加
-            var content = new StringBuilder();
-            foreach(var keyValue in contentList)
-            {
-                int baseTab = 1;
-                if (string.IsNullOrEmpty(keyValue.Key))
-                {
-                    foreach(var item in keyValue.Value)
-                    {
-                        CreateVariable(baseTab, item, ref content);
-                    }
-                }
-                else
-                {
-                    var pascalStr = ToPascal(keyValue.Key);
-                    var camelStr = ToCamel(keyValue.Key);
-                    content.AppendLine(
-                        CreateTagString(baseTab, $"public class {pascalStr} {{")
-                    );
-                    StringBuilder builder = new(); 
-                    foreach (var item in keyValue.Value)
-                    {
-                        CreateVariable(baseTab + 1, item, ref content);
-                        builder.AppendLine(
-                            CreateTagString(baseTab + 2, $"{item.variable}.Initialize(element);")
-                        );
-                    }
-                    content.AppendLine(
-                        CreateTagString(baseTab + 1, $"public {pascalStr} (VisualElement element) {{")
-                    );
-                    content.AppendLine(builder.ToString());
-                    content.AppendLine(
-                        CreateTagString(baseTab + 1, $"}}")
-                    );
-
-                    content.AppendLine(
-                        CreateTagString(baseTab, $"}}")
-                    );
-
-                    content.AppendLine(
-                        CreateTagString(baseTab, $"protected {pascalStr} {camelStr};")
-                    );
-                }
-            }
-
-            var contentStr = content.ToString();
-            fileData = fileData.Replace("{CONTENT}", contentStr);
-
-            System.IO.File.WriteAllText(
-                Path.Combine(
-                    _outputItemField.value,
-                    string.Format(EXPORT_FILE_FORMAT, _outputFileNameField.value)
-                ),
-                fileData
-            );
-
-            var assetPath = _outputItemField.value.Replace(Application.dataPath, "Assets");
-            var prefabPath = Path.Combine( assetPath, string.Format("{0}.prefab", _outputFileNameField.value) );
-            try
-            {
-                var prefab = PrefabUtility.LoadPrefabContents(prefabPath);
-                PrefabUtility.UnloadPrefabContents(prefab);
-                AttachScript();
-            }
-            catch
-            {
-                var generateAssetPath = AssetDatabase.GenerateUniqueAssetPath(prefabPath);
-                var prefab = new GameObject(_outputFileNameField.value);
-
-                var visualTree = AssetDatabase.LoadAssetAtPath(_selectItemField.value, typeof(VisualTreeAsset)) as VisualTreeAsset;
-
-                var uiDocument = prefab.AddComponent<UIDocument>();
-                uiDocument.visualTreeAsset = visualTree;
-
-                PrefabUtility.SaveAsPrefabAssetAndConnect(prefab, generateAssetPath, InteractionMode.AutomatedAction);
-            }
-            ExportSave();
-
-            AssetDatabase.Refresh();
-        }
-
-        private string CreateTagString(int tab, string value)
-        {
-            var tabSpace = "    ";
-            var content = new StringBuilder();
-
-            for(int i = 0; i < tab; i++)
-                content.Append(tabSpace);
-
-            content.Append(value);
-
-            return content.ToString();
-        }
-
         private string GetVariableType(VariableType type)
         {
             return type switch {
@@ -588,21 +335,7 @@ namespace Asterism.UI.UIElements
             };
         }
 
-        private void CreateVariable(int baseSpace, CheckItemListContent content, ref StringBuilder builder)
-        {
-            var variable = GetVariableType(content.variableType);
-            var variableName = CreateUIElement(content.element)?.GetType().Name;
-
-            builder.AppendLine(
-                CreateTagString(baseSpace, $"{variable} {variableName} {content.variable} = new() {{")
-            );
-            builder.AppendLine(
-                CreateTagString(baseSpace + 1, $"TagNameList = new[] {{ {StringArrWithOpen(content.pathList)} }}")
-            );
-            builder.AppendLine(
-                CreateTagString(baseSpace, $"}};")
-            );
-        }
+        
 
         static public string ToPascal(string text)
         {
@@ -648,7 +381,7 @@ namespace Asterism.UI.UIElements
                     throw new Exception("対象になるプレハブが生成されていません");
                 }
 
-                var scriptPath = Path.Combine( assetPath, string.Format(EXPORT_FILE_FORMAT, _outputFileNameField.value) );
+                var scriptPath = Path.Combine( assetPath, string.Format(_export_binding_file_format, _outputFileNameField.value) );
                 if (!System.IO.File.Exists(scriptPath))
                 {
                     throw new Exception("対象になるスクリプトが生成されていません");
@@ -672,18 +405,13 @@ namespace Asterism.UI.UIElements
             catch(Exception ex)
             {
                 EditorUtility.DisplayDialog("", ex.Message, "OK");
+                Close();
             }
         }
 
         private void ExportSave()
         {
-            System.IO.File.WriteAllText(
-                Path.Combine(
-                    _outputItemField.value,
-                    string.Format(EXPORT_SAVE_FILE, _outputFileNameField.value)
-                ),
-                JsonUtility.ToJson(_saveData)
-            );
+            CreateFile(_export_save_file, JsonUtility.ToJson(_saveData));
         }
         
         private void LoadSave(string text)
@@ -692,9 +420,29 @@ namespace Asterism.UI.UIElements
             _selectItemField.value = _saveData.SelectItemPath;
             _outputItemField.value = _saveData.ExportDirectory;
             _outputFileNameField.value = _saveData.ExportFileName;
+            _nameSpaceFIeld.value = _saveData.NameSpaceName;
 
             CreateElement();
         }
 
+
+        public void CreateFile(string format, string fileText, string title = "", string detail = "", bool isNewCreateOnly = false)
+        {
+            var filePath = Path.Combine( _outputItemField.value, string.Format(format, _outputFileNameField.value) );
+
+            // ファイルクラス名を指定する
+            fileText = fileText.Replace("#CLASSNAME#", _outputFileNameField.value);
+
+            // namespaceの設定確認
+            fileText = fileText.Replace("#ROOTNAMESPACEBEGIN#", string.IsNullOrEmpty(_nameSpaceFIeld.value) ? "" : $"namespace {_nameSpaceFIeld.value} \n{{");
+            fileText = fileText.Replace("#ROOTNAMESPACEEND#", string.IsNullOrEmpty(_nameSpaceFIeld.value) ? "" : "}");
+
+            if (isNewCreateOnly && File.Exists(filePath)) {
+                EditorUtility.DisplayDialog(title, detail, "OK");
+                return;
+            }
+
+            File.WriteAllText(filePath, fileText);
+        }
     }
 }

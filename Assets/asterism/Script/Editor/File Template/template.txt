@@ -1,0 +1,22 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+using Asterism.UI;
+
+#ROOTNAMESPACEBEGIN#
+public partial class #CLASSNAME# : UIBehaviour
+{
+    // Start is called before the first frame update
+    void Start()
+    {
+
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+
+    }
+}
+#ROOTNAMESPACEEND#
