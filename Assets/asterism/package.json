@@ -1,5 +1,5 @@
 {
-    "name": "com.molmolgames.asterism.UI",
+    "name": "com.molmolgames.asterism.ui",
     "displayName": "Asterism Engine - UI Extension",
     "version": "1.0.0",
     "unity": "2022.3",
